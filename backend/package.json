@@ -1,0 +1,22 @@
+{
+  "name": "gasless-backend",
+  "version": "1.0.0",
+  "description": "Backend server for gasless NFT transactions",
+  "main": "./server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ethers": "^6.8.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["meta-transactions", "gasless", "NFT", "ethereum"],
+  "author": "",
+  "license": "MIT"
+} 

@@ -1,0 +1,15 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "rpcUrl": "https://sepolia.base.org",
+  "contracts": {
+    "MinimalForwarder": "0xf6de091628282Af42Be7496e0200d8AbdF0ddbF7",
+    "GaslessNFT": "0x4B0E0B810B06248EFF5b9617df3CbD73920a142d"
+  },
+  "deployedAt": "2024-01-XX",
+  "notes": [
+    "Deployer is the trusted relayer in MinimalForwarder",
+    "MinimalForwarder is the trusted forwarder in GaslessNFT",
+    "Only deployer can execute meta transactions"
+  ]
+} 
