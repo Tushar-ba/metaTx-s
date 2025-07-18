@@ -28,7 +28,9 @@ const NFT_ABI = [
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
   "event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)",
   "event NFTMinted(address indexed to, uint256 indexed tokenId)",
-  "event NFTTransferred(address indexed from, address indexed to, uint256 indexed tokenId)"
+  "event NFTTransferred(address indexed from, address indexed to, uint256 indexed tokenId)",
+  "function sendETH() public payable",
+  "event ETHSent(address indexed sender, uint256 amount)"
 ];
 
 // Configuration - These should be set via environment variables
@@ -367,7 +369,45 @@ app.post('/create-mint-request', async (req, res) => {
   }
 });
 
-// Create meta transaction request for transfer
+app.post('/send-eth', async (req, res) => {
+  try {
+    const { from, amount } = req.body;
+    if (!from || !amount) {
+      return res.status(400).json({ error: 'Missing from or amount' });  
+    }
+
+    if (!forwarderContract || !nftContract) {
+      return res.status(500).json({ error: 'Contracts not initialized' });
+    }
+
+    
+    const nonce = await forwarderContract.getNonce(from);
+    
+    
+    const data = nftContract.interface.encodeFunctionData('sendETH', []);
+    
+    const request = {
+      from: from,
+      to: config.nftAddress,
+      value: amount.toString(), 
+      gas: '500000', 
+      nonce: nonce.toString(),
+      data: data
+    };
+
+    const typedData = createTypedData(config.chainId, config.forwarderAddress, request);
+
+    res.json({ request, typedData });
+  } catch (error) {
+    console.error('Error creating send ETH request:', error);
+    res.status(500).json({ 
+      error: 'Failed to create send ETH request', 
+      details: error.message 
+    });
+  }
+});
+
+
 app.post('/create-transfer-request', async (req, res) => {
   try {
     const { from, to, tokenId } = req.body;
@@ -397,7 +437,7 @@ app.post('/create-transfer-request', async (req, res) => {
 
     // Create typed data for signing
     const typedData = createTypedData(config.chainId, config.forwarderAddress, request);
-
+    
     res.json({ request, typedData });
   } catch (error) {
     console.error('Error creating transfer request:', error);
