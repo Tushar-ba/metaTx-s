@@ -15,7 +15,8 @@ contract GaslessNFT is ERC721, ERC2771Context, Ownable {
     // Events
     event NFTMinted(address indexed to, uint256 indexed tokenId);
     event NFTTransferred(address indexed from, address indexed to, uint256 indexed tokenId);
-
+    event ETHSent(address indexed sender, uint256 amount);
+    
     constructor(address trustedForwarder, string memory baseURI) 
         ERC721("GaslessNFT", "GNFT") 
         ERC2771Context(trustedForwarder) 
@@ -41,6 +42,17 @@ contract GaslessNFT is ERC721, ERC2771Context, Ownable {
         _safeMint(to, tokenId);
         emit NFTMinted(to, tokenId);
         return tokenId;
+    }
+
+    function sendETH() public payable {
+        require(msg.value > 0, "GaslessNFT: No ETH sent");
+        (bool success, ) = address(this).call{value: msg.value}("");
+        require(success, "GaslessNFT: Failed to send ETH");
+        emit ETHSent(_msgSender(), msg.value);
+    }
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 
     function safeMint(address to) public returns (uint256) {

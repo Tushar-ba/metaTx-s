@@ -7,8 +7,8 @@ const BACKEND_URL = 'http://localhost:3001';
 
 // Contract addresses - deployed on Base Sepolia
 const CONTRACTS = {
-  forwarder: '0xf6de091628282Af42Be7496e0200d8AbdF0ddbF7',
-  nft: '0x4B0E0B810B06248EFF5b9617df3CbD73920a142d'
+  forwarder: '0xE186b516946058EeA7737a0Dc2A711Be50AF5215',
+  nft: '0x5294cD5c4EF8d1390d8D0eBbB203E47e801E494A'
 };
 
 function App() {
@@ -21,6 +21,7 @@ function App() {
   const [recipientAddress, setRecipientAddress] = useState('');
   const [tokenId, setTokenId] = useState('');
   const [approveAddress, setApproveAddress] = useState('');
+  const [ethAmount, setEthAmount] = useState('');
   const [transactionDetails, setTransactionDetails] = useState(null);
 
   useEffect(() => {
@@ -227,6 +228,55 @@ function App() {
     }
   };
 
+  const sendETH = async () => {
+    if (!account || !ethAmount) {
+      alert('Please enter an ETH amount');
+      return;
+    }
+
+    setLoading(true);
+    setTxStatus('Creating send ETH request...');
+
+    try {
+      // Convert ETH to wei
+      const amountInWei = ethers.parseEther(ethAmount);
+      
+      // Create send ETH request
+      const response = await axios.post(`${BACKEND_URL}/send-eth`, {
+        from: account,
+        amount: amountInWei.toString()
+      });
+
+      const { request, typedData } = response.data;
+      
+      setTxStatus('Please sign the meta transaction in MetaMask...');
+      
+      // Sign the meta transaction
+      const signature = await signMetaTransaction(typedData);
+      
+      setTxStatus('Executing gasless send ETH transaction...');
+      
+      // Execute the meta transaction
+      const result = await executeMetaTransaction(request, signature);
+      
+      setTxStatus(`✅ ETH sent successfully! TX: ${result.txHash}`);
+      
+      // Clear form
+      setEthAmount('');
+      
+      // Check transaction details
+      setTimeout(() => {
+        checkTransactionDetails(result.txHash);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error sending ETH:', error);
+      setTxStatus('❌ Error sending ETH: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -316,6 +366,27 @@ function App() {
                   {loading ? 'Processing...' : 'Approve NFT (Gasless)'}
                 </button>
               </div>
+
+              <div className="action-card">
+                <h3>💰 Send ETH</h3>
+                <p>Send ETH to the contract without paying gas!</p>
+                <input
+                  type="number"
+                  placeholder="Amount in ETH (e.g., 0.01)"
+                  value={ethAmount}
+                  onChange={(e) => setEthAmount(e.target.value)}
+                  className="input-field"
+                  step="0.001"
+                  min="0"
+                />
+                <button 
+                  onClick={sendETH} 
+                  disabled={loading || !ethAmount}
+                  className="action-btn send-eth-btn"
+                >
+                  {loading ? 'Processing...' : 'Send ETH (Gasless)'}
+                </button>
+              </div>
             </div>
 
             {txStatus && (
@@ -366,7 +437,7 @@ function App() {
                   <ol>
                     <li>Your signature is sent to the <strong>Forwarder contract</strong></li>
                     <li>Forwarder verifies your signature and calls the <strong>NFT contract</strong></li>
-                    <li>The NFT is minted on the <strong>NFT contract</strong> (this appears as an internal transaction)</li>
+                    <li>The action is executed on the <strong>NFT contract</strong> (this appears as an internal transaction)</li>
                     <li>Both contracts may emit events during this process</li>
                   </ol>
                 </div>

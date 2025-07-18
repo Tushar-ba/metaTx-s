@@ -5,8 +5,8 @@
   },
   "deployer": "0x49f51e3C94B459677c3B1e611DB3E44d4E6b1D55",
   "contracts": {
-    "MinimalForwarder": "0xf6de091628282Af42Be7496e0200d8AbdF0ddbF7",
-    "GaslessNFT": "0x4B0E0B810B06248EFF5b9617df3CbD73920a142d"
+    "MinimalForwarder": "0xE186b516946058EeA7737a0Dc2A711Be50AF5215",
+    "GaslessNFT": "0x5294cD5c4EF8d1390d8D0eBbB203E47e801E494A"
   },
-  "timestamp": "2025-06-20T07:17:41.541Z"
+  "timestamp": "2025-07-18T03:27:37.847Z"
 }
